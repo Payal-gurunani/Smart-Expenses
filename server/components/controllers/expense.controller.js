@@ -2,7 +2,7 @@ import {asyncHandler} from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js';
 import {Expense} from '../models/Expense.model.js'
 import { ApiResponse } from '../utils/ApiResponse.js';
-
+import mongoose from 'mongoose';
 export const createExpense = asyncHandler(async(req , res)=>{
     const {title , amount , category,date,notes,imageUrl} = req.body;
     const userId = req.user._id;
@@ -37,3 +37,98 @@ export const getExpenses = asyncHandler(async (req,res)=>{
         new ApiResponse(200,"Expenses get successfully",allExpenses)
     )
 })
+
+export const getExpenseById = asyncHandler(async (req, res) => {
+    const { expenseId } = req.params;
+    const userId = req.user._id;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(expenseId)) {
+        throw new ApiError(400, 'Invalid expense ID');
+    }
+
+    // Find the expense that belongs to the user
+    const expense = await Expense.findOne({ _id: expenseId, userId });
+
+    if (!expense) {
+        throw new ApiError(404, 'Expense not found or unauthorized');
+    }
+
+    res.status(200).json(
+        new ApiResponse(200, expense, 'Expense fetched successfully')
+    );
+});
+
+export const updateExpense = asyncHandler(async (req, res) => {
+  const expenseId = req.params.expenseId;
+  const userId = req.user._id;
+  const updates = req.body;
+  
+    
+  // 1. Find the expense
+  const expense = await Expense.findById(expenseId);
+
+  // 2. Check if expense exists
+  if (!expense) {
+    throw new ApiError(404, 'Expense not found');
+  }
+
+  // 3. Check ownership
+  if (expense.userId.toString() !== userId.toString()) {
+    throw new ApiError(403, 'You are not authorized to update this expense');
+  }
+
+  // 4. Update and save
+  Object.assign(expense, updates);
+  await expense.save();
+
+  res.status(200).json(
+    new ApiResponse(200, expense, 'Expense updated successfully')
+  );
+});
+
+export const deleteExpense = asyncHandler(async (req, res) => {
+  const expenseId = req.params.expenseId;
+  const userId = req.user._id;
+
+  const expense = await Expense.findById(expenseId);
+
+  if (!expense) {
+    throw new ApiError(404, 'Expense not found');
+  }
+
+  if (expense.userId.toString() !== userId.toString()) {
+    throw new ApiError(403, 'You are not authorized to delete this expense');
+  }
+
+  await Expense.findByIdAndDelete(expenseId);
+
+  res.status(200).json(
+    new ApiResponse(200, null, 'Expense deleted successfully')
+  );
+});
+
+
+export const getExpenseSummary = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const summary = await Expense.aggregate([
+    { $match: { userId } }, // Only current user's expenses
+
+    {
+      $group: {
+        _id: {
+          category: '$category',
+          month: { $month: '$date' },
+          year: { $year: '$date' }
+        },
+        totalAmount: { $sum: '$amount' },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: { '_id.year': -1, '_id.month': -1 } // Latest first
+    }
+  ]);
+
+  res.status(200).json(new ApiResponse(200, summary, 'Expense summary fetched'));
+});
