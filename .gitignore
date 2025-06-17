@@ -10,6 +10,7 @@ logs/
 # Environment variables
 .env
 client/.env
+client/.env.production
 server/.env
 
 # Build output
