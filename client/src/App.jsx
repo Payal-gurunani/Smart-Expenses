@@ -6,40 +6,40 @@ import { createTheme, CssBaseline, ThemeProvider } from '@mui/material'
 import { IconButton } from '@mui/material'
 import { Routes,Route } from 'react-router-dom'
 import Layout from './Layout'
+import Register from './authentication/Register';
+import Login from './authentication/Login';
 function App() {
- const [isDark, setIsDark] = useState(true)
+//  const [isDark, setIsDark] = useState(true)
 
- useEffect(()=>{
-  const savedTheme = localStorage.getItem('theme');
-  if(savedTheme){
-    setIsDark(savedTheme === 'dark')
-  }
- },[])
+//  useEffect(()=>{
+//   const savedTheme = localStorage.getItem('theme');
+//   if(savedTheme){
+//     setIsDark(savedTheme === 'dark')
+//   }
+//  },[])
 
- useEffect(()=>{
-  if (isDark) {
-    document.documentElement.classList.add('dark');
-  }else{
-    document.documentElement.classList.remove('dark')
-  }
-  localStorage.setItem('theme', isDark? 'dark':'light')
- },[isDark])
+//  useEffect(()=>{
+//   if (isDark) {
+//     document.documentElement.classList.add('dark');
+//   }else{
+//     document.documentElement.classList.remove('dark')
+//   }
+//   localStorage.setItem('theme', isDark? 'dark':'light')
+//  },[isDark])
 
- const toggleTheme = () =>{
-  setIsDark(!isDark)
- }
+//  const toggleTheme = () =>{
+//   setIsDark(!isDark)
+//  }
 
- const theme = createTheme({
-  palette : {
-    mode : isDark ? 'dark' : 'light'
-  }
- })
+//  const theme = createTheme({
+//   palette : {
+//     mode : isDark ? 'dark' : 'light'
+//   }
+//  })
   return (
-   <ThemeProvider theme={theme} >
-  <CssBaseline />
-    <div className={` flex flex-col  min-h-screen ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={` flex flex-col  min-h-screen `}>
 
-      <div className='absolute top-4 right-4'>
+      {/* <div className='absolute top-4 right-4'>
       <IconButton
          onClick={toggleTheme}
            sx={{
@@ -60,17 +60,15 @@ function App() {
         )}
       </IconButton>
 
-    </div>
+    </div> */}
 
        <Routes>
       <Route path='/' element = {<Layout />}>
-
+      <Route path='register' element={<Register />} />
+      <Route path='login' element={<Login />}/>
       </Route>
     </Routes>
     </div>
-
-  </ThemeProvider>
-
 
   )
 }

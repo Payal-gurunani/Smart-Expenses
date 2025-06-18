@@ -4,29 +4,33 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {User} from "../models/User.model.js"
 import { genrateToken } from "../utils/genrateToken.js";
 const Register = asyncHandler(async(req,res)=>{
-const {username , email, password,categoryBudgets} = req.body;
-if([username ,email ,password ,categoryBudgets].some((field)=>field?.trim ==="")){
+const {username , email, password} = req.body;
+if([username ,email ,password ].some((field)=>field?.trim() ==="")){
     throw new ApiError(400,"All fields are required")
 }
 const existuser = await User.findOne({
-    $or :[ {email} ]
-})
+  $or: [{ email }]
+});
+
 if(existuser){
     throw new ApiError(409 , "User with this mail address is already exist")
 }
 
-if(!password || password.trim ===""){
+
+if(!password || password.trim() ===""){
     throw new ApiError(400,"Password required")
 }
 
 const user = await User.create({
-    username,email,password,categoryBudgets
+    username,email,password
 })
 
 const createduser = await User.findById(user._id).select('-password');
 if(!createduser){
      throw new ApiError(500,"User not created")
 }
+
+
  return res
     .status(201)
     .json(

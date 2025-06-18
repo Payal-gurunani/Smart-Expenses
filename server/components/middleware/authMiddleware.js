@@ -6,18 +6,15 @@ import { ApiError } from '../utils/ApiError.js';
 
 export const authenticateUser = asyncHandler(async (req, res, next) => {
     const token = req.cookies.token;
-    // console.log(token,"from middle");
-    
-
     if (!token) {
         throw new ApiError(401, "No token provided");
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // console.log("Decoded",decoded);
+  
     
     const user = await User.findById(decoded._id).select("-password");
-    // console.log("USER from middle",user);
+ 
     
     if (!user) {
         throw new ApiError(401, "Invalid token or user does not exist");

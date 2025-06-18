@@ -24,14 +24,15 @@ export const apiRequest = async (endpoint, data = null, headers = {}) => {
     }
 
     const json = await response.json();
-
+    // console.log(json.message , "Message");
+    
     if (!response.ok) {
       throw new Error(json.message || "Request failed");
     }
 
     return json;
   } catch (err) {
-    console.error("API Request Error:", err);
+    console.error("API Request Error:");
     throw err;
   }
 };
