@@ -6,7 +6,7 @@ export const apiRequest = async (endpoint, data = null, headers = {}) => {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
-    },
+    },    
   };
 
   if (data && endpoint.method !== "GET") {
@@ -15,7 +15,6 @@ export const apiRequest = async (endpoint, data = null, headers = {}) => {
 
   try {
     const response = await fetch(endpoint.url, options);
-
     const contentType = response.headers.get("content-type");
 
     if (!contentType || !contentType.includes("application/json")) {
@@ -24,15 +23,12 @@ export const apiRequest = async (endpoint, data = null, headers = {}) => {
     }
 
     const json = await response.json();
-    // console.log(json.message , "Message");
-    
     if (!response.ok) {
       throw new Error(json.message || "Request failed");
     }
 
     return json;
   } catch (err) {
-    console.error("API Request Error:");
     throw err;
   }
 };

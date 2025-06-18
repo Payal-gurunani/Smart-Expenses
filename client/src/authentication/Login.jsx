@@ -17,9 +17,11 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await apiRequest(endpoints.Login, form);
-      if (response.message.token) {
-        localStorage.setItem('token', response.message.token);
-        navigate('/'); // ✅ navigate to some protected route
+      
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        
+        navigate('/create-expense'); // ✅ navigate to some protected route
       } else {
         setError('Login failed: No token returned');
       }

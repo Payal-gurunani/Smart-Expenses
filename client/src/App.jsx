@@ -8,6 +8,7 @@ import { Routes,Route } from 'react-router-dom'
 import Layout from './Layout'
 import Register from './authentication/Register';
 import Login from './authentication/Login';
+import CreateExpense from './pages/CreateExpense';
 function App() {
 //  const [isDark, setIsDark] = useState(true)
 
@@ -66,6 +67,7 @@ function App() {
       <Route path='/' element = {<Layout />}>
       <Route path='register' element={<Register />} />
       <Route path='login' element={<Login />}/>
+      <Route path='create-expense' element={<CreateExpense />}/>
       </Route>
     </Routes>
     </div>

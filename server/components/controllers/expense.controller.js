@@ -6,8 +6,7 @@ import mongoose from 'mongoose';
 export const createExpense = asyncHandler(async(req , res)=>{
     const {title , amount , category,date,notes,imageUrl} = req.body;
     const userId = req.user._id;
-    // console.log(userId,"User id");
-    
+   
     if(!title||!amount||!category){
         throw new ApiError(400,"Title , amount , category are required",)
     }
