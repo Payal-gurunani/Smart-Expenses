@@ -7,31 +7,59 @@ const AllExpenses = () => {
     const [expenses, setExpenses] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [expenseToDelete, setExpenseToDelete] = useState(null);
-
     const [loading, setLoading] = useState(true);
     const [selectedExpense, setSelectedExpense] = useState(null); // for viewing
+    const [monthlySummary, setMonthlySummary] = useState([]);
+const [selectedMonthKey, setSelectedMonthKey] = useState(null);
+
     const navigate = useNavigate();
+    
 
-    const fetchExpenses = async () => {
-        try {
-            const res = await apiRequest(endpoints.GetExpense)
-            console.log(res, "from get app");
+   
+  const fetchData = async () => {
+    try {
+      const [summaryRes, expensesRes] = await Promise.all([
+        apiRequest(endpoints.Summary),
+        apiRequest(endpoints.GetExpense),
+      ]);
+      setMonthlySummary(summaryRes.data);
+      setExpenses(expensesRes.data);
+    } catch (err) {
+      console.error("Error fetching data", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            setExpenses(res.data);
-        } catch (error) {
-            console.error("Failed to load expenses", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
-    useEffect(() => {
-        fetchExpenses();
-    }, []);
+useEffect(() => {
+  fetchData();
+}, []);
 
     if (loading) return <div className="text-center mt-10 text-[#114AB1]">Loading expenses...</div>;
     if (expenses.length === 0)
         return <div className="text-center mt-10 text-[#E4580B]">No expenses found.</div>;
+const groupedSummaries = {};
+
+monthlySummary.forEach((summary) => {
+  const key = `${summary._id.month}-${summary._id.year}`;
+  if (!groupedSummaries[key]) {
+    groupedSummaries[key] = {
+      ...summary,
+      totalAmount: summary.totalAmount,
+      count: summary.count,
+    };
+  } else {
+    // Merge totals
+    groupedSummaries[key].totalAmount += summary.totalAmount;
+    groupedSummaries[key].count += summary.count;
+  }
+});
+
+const mergedSummaries = Object.entries(groupedSummaries).map(([key, value]) => ({
+  ...value,
+  key,
+}));
 
     return (
         <div className="p-4 md:p-8 bg-[#F5F9FF] min-h-screen">
@@ -43,73 +71,102 @@ const AllExpenses = () => {
             >
                 + Add more Expense
             </button>
+          {!selectedMonthKey && (
+            
+  <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+  {mergedSummaries.map((summary) => {
+  const monthName = new Date(summary._id.year, summary._id.month - 1).toLocaleString("default", { month: "long" });
+  return (
+    <motion.div
+      key={summary.key}
+      className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+      >
+      <h2 className="text-lg font-bold text-[#114AB1]">
+        {monthName} {summary._id.year}
+      </h2>
+      <p className="text-gray-600 text-sm">Total Spent: ₹{summary.totalAmount}</p>
+      <p className="text-gray-600 text-sm">Expenses: {summary.count}</p>
+      <button
+        className="mt-3 text-sm text-blue-600 underline"
+        onClick={() => setSelectedMonthKey(summary.key)}
+      >
+        View Details
+      </button>
+    </motion.div>
+  );
+})}
 
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                {expenses.map((expense, index) => (
-  <motion.div
-    key={expense._id}
-    initial={{ opacity: 0, y: 30 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, delay: index * 0.05 }}
-    className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
-  >
+  </div>
+)}
 
-                        <h2 className="text-lg font-semibold text-[#114AB1]">{expense.title}</h2>
-                        <p className="text-sm text-gray-600">₹ {expense.amount}</p>
-                        <p className="text-sm text-gray-600">Category: {expense.category}</p>
-                        <p className="text-sm text-gray-600">Date: {new Date(expense.date).toLocaleDateString()}</p>
-                        {expense.notes && <p className="text-xs mt-1 italic text-gray-500">Notes: {expense.notes}</p>}
+            {selectedMonthKey && (
+  <>
+    <button
+      onClick={() => setSelectedMonthKey(null)}
+      className="text-sm text-blue-600 underline mt-4"
+    >
+      ← Back to monthly summary
+    </button>
 
-                        <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const res = await apiRequest(endpoints.GetExpenseById(expense._id))
-                                        setSelectedExpense(res.data);
-                                    } catch (err) {
-                                        console.error("Error fetching expense by ID", err);
-                                    }
-                                }}
-                                className="text-sm text-[#114AB1] hover:underline"
-                            >
-                                View
-                            </button>
+    <h2 className="text-2xl font-bold text-center mt-6 text-[#114AB1]">
+      {new Date(Number(selectedMonthKey.split("-")[1]), Number(selectedMonthKey.split("-")[0]) - 1).toLocaleString("default", { month: "long", year: "numeric" })} Expenses
+    </h2>
 
-                            <button
-                                onClick={() => {
-                                    setExpenseToDelete(expense);
-                                    setDeleteConfirm(true);
-                                }}
-                                className="text-sm text-red-600 hover:underline"
-                            >
-                                Delete
-                            </button>
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4">
+      {expenses
+        .filter((exp) => {
+          const date = new Date(exp.date);
+          const key = `${date.getMonth() + 1}-${date.getFullYear()}`;
+          return key === selectedMonthKey;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date)) // Ascending
+        .map((expense) => (
+          <motion.div
+            key={expense._id}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+          >
+            <h2 className="text-lg font-semibold text-[#114AB1]">{expense.title}</h2>
+            <p className="text-sm text-gray-600">₹ {expense.amount}</p>
+            <p className="text-sm text-gray-600">Category: {expense.category}</p>
+            <p className="text-sm text-gray-600">Date: {new Date(expense.date).toLocaleDateString()}</p>
+            {expense.notes && <p className="text-xs mt-1 italic text-gray-500">Notes: {expense.notes}</p>}
 
-
-                            <button
-                                onClick={() => navigate(`/update-expense/${expense._id}`)}
-                                className="text-sm text-green-600 hover:underline"
-                            >
-                                Edit
-                            </button>
-                        </div>
-                    </motion.div>
-
-                    //   <motion.div
-                    //     key={expense._id}
-                    //     initial={{ opacity: 0, y: 30 }}
-                    //     animate={{ opacity: 1, y: 0 }}
-                    //     transition={{ duration: 0.4 }}
-                    //     className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
-                    //   >
-                    //     <h2 className="text-lg font-semibold text-[#114AB1]">{expense.title}</h2>
-                    //     <p className="text-sm text-gray-600">₹ {expense.amount}</p>
-                    //     <p className="text-sm text-gray-600">Category: {expense.category}</p>
-                    //     <p className="text-sm text-gray-600">Date: {new Date(expense.date).toLocaleDateString()}</p>
-                    //     {expense.notes && <p className="text-xs mt-1 italic text-gray-500">Notes: {expense.notes}</p>}
-                    //   </motion.div>
-                ))}
+            <div className="flex gap-4 mt-4">
+              <button
+                onClick={async () => {
+                  const res = await apiRequest(endpoints.GetExpenseById(expense._id));
+                  setSelectedExpense(res.data);
+                }}
+                className="text-sm text-[#114AB1] hover:underline"
+              >
+                View
+              </button>
+              <button
+                onClick={() => {
+                  setExpenseToDelete(expense);
+                  setDeleteConfirm(true);
+                }}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => navigate(`/update-expense/${expense._id}`)}
+                className="text-sm text-green-600 hover:underline"
+              >
+                Edit
+              </button>
             </div>
+          </motion.div>
+        ))}
+    </div>
+  </>
+)}
+
+
             {deleteConfirm && expenseToDelete && (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -126,7 +183,7 @@ const AllExpenses = () => {
                                         await apiRequest(endpoints.DeleteExpense(expenseToDelete._id));
                                         setDeleteConfirm(false);
                                         setExpenseToDelete(null);
-                                        fetchExpenses(); // refresh list
+                                        fetchData(); // refresh list
                                     } catch (err) {
                                         console.error("Error deleting expense", err);
                                     }
