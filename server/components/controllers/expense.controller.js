@@ -33,7 +33,7 @@ export const getExpenses = asyncHandler(async (req,res)=>{
         throw new ApiError(404,"No expenses available")
     }
     return res.status(200).json(
-        new ApiResponse(200,"Expenses get successfully",allExpenses)
+        new ApiResponse(200,allExpenses,"Expenses get successfully")
     )
 })
 

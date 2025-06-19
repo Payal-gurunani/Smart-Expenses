@@ -9,6 +9,8 @@ import Layout from './Layout'
 import Register from './authentication/Register';
 import Login from './authentication/Login';
 import CreateExpense from './pages/CreateExpense';
+import AllExpenses from './pages/Allexpenses';
+import UpdateExpense from './pages/UpdateExpense';
 function App() {
 //  const [isDark, setIsDark] = useState(true)
 
@@ -68,6 +70,9 @@ function App() {
       <Route path='register' element={<Register />} />
       <Route path='login' element={<Login />}/>
       <Route path='create-expense' element={<CreateExpense />}/>
+      <Route path = 'all-expenses' element={<AllExpenses />} />
+      <Route path="/update-expense/:id" element={< UpdateExpense/>} />
+
       </Route>
     </Routes>
     </div>

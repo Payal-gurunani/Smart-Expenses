@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { apiRequest } from '../config/apiRequest';
-import { endpoints } from '../config/endPoints';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { apiRequest } from "../config/apiRequest";
+import { endpoints } from "../config/endPoints";
+import { motion } from "framer-motion";
 
-const CreateExpense = () => {
-  const navigate = useNavigate()
+const UpdateExpense = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
@@ -15,34 +17,43 @@ const CreateExpense = () => {
     imageUrl: '',
   });
 
+  // Fetch current data to pre-fill
+  useEffect(() => {
+    const fetchExpense = async () => {
+      try {
+        const res = await apiRequest(endpoints.GetExpenseById(id))
+        const expense = res.data;
+        setFormData({
+          title: expense.title || '',
+          amount: expense.amount || '',
+          category: expense.category || '',
+          date: expense.date ? expense.date.slice(0, 10) : '',
+          notes: expense.notes || '',
+          imageUrl: expense.imageUrl || '',
+        });
+      } catch (err) {
+        console.error("Failed to fetch expense", err);
+      }
+    };
+
+    fetchExpense();
+  }, [id]);
+
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // ✅ Using your fetch-based apiRequest utility and defined endpoints
-      const response = await apiRequest(endpoints.CreateExpense, formData);
-
-      alert(response.message || "Expense created successfully!");
-
-      // Reset form
-      setFormData({
-        title: '',
-        amount: '',
-        category: '',
-        date: '',
-        notes: '',
-        imageUrl: '',
-      });
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Error creating expense");
+      await apiRequest(endpoints.UpdateExpense(id), formData);
+      alert("Expense updated successfully!");
+      navigate("/all-expenses");
+    } catch (err) {
+      console.error("Failed to update expense", err);
+      alert("Error updating expense.");
     }
   };
-
 
   return (
     <div className="min-h-screen bg-[#f4f7fa] flex items-center justify-center p-4">
@@ -52,7 +63,7 @@ const CreateExpense = () => {
         transition={{ duration: 0.6 }}
         className="bg-white shadow-2xl rounded-2xl w-full max-w-2xl p-8"
       >
-        <h2 className="text-2xl font-bold text-[#114AB1] mb-6 text-center">Create New Expense</h2>
+        <h2 className="text-2xl font-bold text-[#114AB1] mb-6 text-center">Update Expense</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="title"
@@ -60,7 +71,7 @@ const CreateExpense = () => {
             value={formData.title}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
+            className="w-full px-4 py-2 border rounded-lg"
           />
           <input
             name="amount"
@@ -69,14 +80,14 @@ const CreateExpense = () => {
             value={formData.amount}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
+            className="w-full px-4 py-2 border rounded-lg"
           />
           <select
             name="category"
             value={formData.category}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
+            className="w-full px-4 py-2 border rounded-lg"
           >
             <option value="">Select Category</option>
             <option value="Food">Food</option>
@@ -90,42 +101,34 @@ const CreateExpense = () => {
             type="date"
             value={formData.date}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
+            className="w-full px-4 py-2 border rounded-lg"
           />
           <textarea
             name="notes"
-            placeholder="Notes (optional)"
+            placeholder="Notes"
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
+            className="w-full px-4 py-2 border rounded-lg"
           />
           <input
             name="imageUrl"
             type="url"
-            placeholder="Image URL (optional)"
+            placeholder="Image URL"
             value={formData.imageUrl}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
+            className="w-full px-4 py-2 border rounded-lg"
           />
           <button
             type="submit"
-            className="w-full bg-[#E4580B] text-white font-semibold py-2 rounded-lg hover:bg-[#c54408] transition"
+            className="w-full bg-[#E4580B] text-white py-2 rounded-lg hover:bg-[#c54408]"
           >
-            Add Expense
+            Update Expense
           </button>
-          <button
-            type="button"
-            onClick={() => navigate('/all-expenses')}
-            className="w-full bg-[#114AB1] text-white font-semibold py-2 rounded-lg hover:bg-[#0c3a8e] transition mt-2"
-          >
-            View All Expenses
-          </button>
-
         </form>
       </motion.div>
     </div>
   );
 };
 
-export default CreateExpense;
+export default UpdateExpense;
