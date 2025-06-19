@@ -108,6 +108,20 @@ const CreateExpense = () => {
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6793AC]"
           />
+          {formData.imageUrl && (
+  <div className="mt-2">
+    <p className="text-sm text-gray-600 mb-1">Image Preview:</p>
+    <img
+      src={formData.imageUrl}
+      alt="Expense Preview"
+      className="max-h-40 rounded-lg object-cover border border-gray-300"
+      onError={(e) => {
+        e.target.style.display = "none";
+      }}
+    />
+  </div>
+)}
+
           <button
             type="submit"
             className="w-full bg-[#E4580B] text-white font-semibold py-2 rounded-lg hover:bg-[#c54408] transition"

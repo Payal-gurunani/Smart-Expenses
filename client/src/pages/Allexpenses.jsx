@@ -12,7 +12,7 @@ const AllExpenses = () => {
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [expenseToDelete, setExpenseToDelete] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedExpense, setSelectedExpense] = useState(null); // for viewing
+    const [selectedExpense, setSelectedExpense] = useState(null); 
     const [monthlySummary, setMonthlySummary] = useState([]);
     const [selectedMonthKey, setSelectedMonthKey] = useState(null);
 const [refetch, setRefetch] = useState(false);
@@ -122,6 +122,7 @@ const [refetch, setRefetch] = useState(false);
                                     className="mt-3 text-sm text-blue-600 underline"
                                     onClick={() => setSelectedMonthKey(summary.key)}
                                 >
+                                    
                                     View Details
                                 </button>
                             </motion.div>
@@ -164,7 +165,7 @@ const [refetch, setRefetch] = useState(false);
                                     <p className="text-sm text-gray-600">₹ {expense.amount}</p>
                                     <p className="text-sm text-gray-600">Category: {expense.category}</p>
                                     <p className="text-sm text-gray-600">Date: {new Date(expense.date).toLocaleDateString()}</p>
-                                    {expense.notes && <p className="text-xs mt-1 italic text-gray-500">Notes: {expense.notes}</p>}
+                                    {/* {expense.notes && <p className="text-xs mt-1 italic text-gray-500">Notes: {expense.notes}</p>} */}
 
                                     <div className="flex gap-4 mt-4">
                                         <button
