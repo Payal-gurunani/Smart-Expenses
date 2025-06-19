@@ -11,6 +11,7 @@ import Login from './authentication/Login';
 import CreateExpense from './pages/CreateExpense';
 import AllExpenses from './pages/Allexpenses';
 import UpdateExpense from './pages/UpdateExpense';
+import Home from './pages/Home';
 function App() {
 //  const [isDark, setIsDark] = useState(true)
 
@@ -67,6 +68,7 @@ function App() {
 
        <Routes>
       <Route path='/' element = {<Layout />}>
+      <Route index element = {<Home />}/>
       <Route path='register' element={<Register />} />
       <Route path='login' element={<Login />}/>
       <Route path='create-expense' element={<CreateExpense />}/>

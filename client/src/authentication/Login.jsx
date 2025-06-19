@@ -21,7 +21,7 @@ const Login = () => {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         
-        navigate('/create-expense'); // ✅ navigate to some protected route
+        navigate('/'); // ✅ navigate to some protected route
       } else {
         setError('Login failed: No token returned');
       }
