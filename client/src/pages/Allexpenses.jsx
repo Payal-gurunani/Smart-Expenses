@@ -3,7 +3,7 @@ import { apiRequest } from "../config/apiRequest";
 import { endpoints } from "../config/endPoints";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-// import { ToastContainer } from "react-toastify";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { toast, ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -16,6 +16,9 @@ const AllExpenses = () => {
     const [monthlySummary, setMonthlySummary] = useState([]);
     const [selectedMonthKey, setSelectedMonthKey] = useState(null);
     const [refetch, setRefetch] = useState(false);
+const [showChart, setShowChart] = useState(false); 
+
+    const COLORS = ["#114AB1", "#6793AC", "#E4580B", "#82ca9d", "#FFBB28", "#FF8042"];
 
     const navigate = useNavigate();
     const fetchData = async () => {
@@ -93,28 +96,62 @@ const AllExpenses = () => {
             {!selectedMonthKey && (
 
                 <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                    {mergedSummaries.map((summary) => {
-                        const monthName = new Date(summary._id.year, summary._id.month - 1).toLocaleString("default", { month: "long" });
-                        return (
-                            <motion.div
-                                key={summary.key}
-                                className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
-                            >
-                                <h2 className="text-lg font-bold text-[#114AB1]">
-                                    {monthName} {summary._id.year}
-                                </h2>
-                                <p className="text-gray-600 text-sm">Total Spent: ₹{summary.totalAmount}</p>
+                  {mergedSummaries.map((summary, index) => {
+  const monthName = new Date(summary._id.year, summary._id.month - 1).toLocaleString("default", { month: "long" });
+  // Add this line inside map if chart state is per-summary
 
-                                <button
-                                    className="mt-3 text-sm text-blue-600 underline"
-                                    onClick={() => setSelectedMonthKey(summary.key)}
-                                >
+  return (
+    <motion.div
+      key={summary.key}
+      className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+    >
+      <h2 className="text-lg font-bold text-[#114AB1]">
+        {monthName} {summary._id.year}
+      </h2>
+      <p className="text-gray-600 text-sm">Total Spent: ₹{summary.totalAmount}</p>
 
-                                    View Details
-                                </button>
-                            </motion.div>
-                        );
-                    })}
+      {/* Expandable Category Chart Button */}
+      <button
+        onClick={() => setShowChart(!showChart)}
+        className="mt-2 text-sm text-[#E4580B] underline"
+      >
+        {showChart ? "Hide Category Breakdown" : "Show Category Breakdown"}
+      </button>
+
+      {showChart && (
+        <div className="mt-4">
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie
+                data={summary.categories}
+                dataKey="amount"
+                nameKey="category"
+                cx="50%"
+                cy="50%"
+                outerRadius={60}
+                label
+              >
+                {summary.categories.map((entry, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend verticalAlign="bottom" height={36} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <button
+        className="mt-3 ml-3 text-sm text-blue-600 underline"
+        onClick={() => setSelectedMonthKey(summary.key)}
+      >
+        View Details
+      </button>
+    </motion.div>
+  );
+})}
+
 
                 </div>
             )}
