@@ -79,6 +79,7 @@ const CreateExpense = () => {
           >
             <option value="">Select Category</option>
             <option value="Food">Food</option>
+            <option value="Rent">Rent</option>
             <option value="Travel">Travel</option>
             <option value="Shopping">Shopping</option>
             <option value="Bills">Bills</option>

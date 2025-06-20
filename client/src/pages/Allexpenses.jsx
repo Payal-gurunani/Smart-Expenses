@@ -41,7 +41,7 @@ const AllExpenses = () => {
 
         } catch (err) {
             console.error("Error fetching data", err);
-            toast.error("Error fetching expense.");
+            
         } finally {
             setLoading(false);
         }
