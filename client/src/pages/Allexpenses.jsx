@@ -24,7 +24,7 @@ const AllExpenses = () => {
                 apiRequest(endpoints.Summary),
                 apiRequest(endpoints.GetExpense),
             ]);
-            setMonthlySummary(summaryRes.data);
+            setMonthlySummary(summaryRes.data?.data || []);
             setExpenses(expensesRes.data);
 
             if (selectedMonthKey) {
@@ -41,7 +41,7 @@ const AllExpenses = () => {
 
         } catch (err) {
             console.error("Error fetching data", err);
-            
+
         } finally {
             setLoading(false);
         }
@@ -72,27 +72,13 @@ const AllExpenses = () => {
         );
     }
 
-    const groupedSummaries = {};
+    // const groupedSummaries = {};
 
-    monthlySummary.forEach((summary) => {
-        const key = `${summary._id.month}-${summary._id.year}`;
-        if (!groupedSummaries[key]) {
-            groupedSummaries[key] = {
-                ...summary,
-                totalAmount: summary.totalAmount,
-                count: summary.count,
-            };
-        } else {
-            // Merge totals
-            groupedSummaries[key].totalAmount += summary.totalAmount;
-            groupedSummaries[key].count += summary.count;
-        }
-    });
-
-    const mergedSummaries = Object.entries(groupedSummaries).map(([key, value]) => ({
-        ...value,
-        key,
+    const mergedSummaries = monthlySummary.map((summary) => ({
+        ...summary,
+        key: `${summary._id.month}-${summary._id.year}`,
     }));
+    const selectedSummary = mergedSummaries.find(s => s.key === selectedMonthKey);
 
     return (
         <div className="p-4 md:p-8 bg-[#F5F9FF] min-h-screen">
@@ -118,7 +104,7 @@ const AllExpenses = () => {
                                     {monthName} {summary._id.year}
                                 </h2>
                                 <p className="text-gray-600 text-sm">Total Spent: ₹{summary.totalAmount}</p>
-                                <p className="text-gray-600 text-sm">Expenses: {summary.count}</p>
+
                                 <button
                                     className="mt-3 text-sm text-blue-600 underline"
                                     onClick={() => setSelectedMonthKey(summary.key)}
@@ -145,6 +131,14 @@ const AllExpenses = () => {
                     <h2 className="text-2xl font-bold text-center mt-6 text-[#114AB1]">
                         {new Date(Number(selectedMonthKey.split("-")[1]), Number(selectedMonthKey.split("-")[0]) - 1).toLocaleString("default", { month: "long", year: "numeric" })} Expenses
                     </h2>
+                    {/* Category-wise breakdown for selected month */}
+                    {selectedSummary?.categories?.map(cat => (
+                        <div key={cat.category} className="text-sm text-center text-gray-700">
+                            <strong>{cat.category}</strong>: ₹{cat.amount}
+                        </div>
+                    ))}
+
+
 
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4">
                         {expenses

@@ -107,27 +107,91 @@ export const deleteExpense = asyncHandler(async (req, res) => {
   );
 });
 
-
 export const getExpenseSummary = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const summary = await Expense.aggregate([
-    { $match: { userId } }, // Only current user's expenses
+  const { startDate, endDate, page = 1, limit = 5 } = req.query;
 
+  const matchStage = { userId };
+
+  // Optional date range filtering
+  if (startDate && endDate) {
+    matchStage.date = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate)
+    };
+  }
+
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const parsedLimit = parseInt(limit);
+
+  const aggregation = await Expense.aggregate([
+    { $match: matchStage },
     {
       $group: {
         _id: {
-          category: '$category',
-          month: { $month: '$date' },
-          year: { $year: '$date' }
+          year: { $year: "$date" },
+          month: { $month: "$date" },
+          category: "$category"
         },
-        totalAmount: { $sum: '$amount' },
-        count: { $sum: 1 }
+        categoryTotal: { $sum: "$amount" }
       }
     },
     {
-      $sort: { '_id.year': -1, '_id.month': -1 } // Latest first
+      $group: {
+        _id: { year: "$_id.year", month: "$_id.month" },
+        categories: {
+          $push: {
+            category: "$_id.category",
+            amount: "$categoryTotal"
+          }
+        },
+        totalAmount: { $sum: "$categoryTotal" }
+      }
+    },
+    { $sort: { "_id.year": -1, "_id.month": -1 } },
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: skip }, { $limit: parsedLimit }]
+      }
     }
   ]);
 
-  res.status(200).json(new ApiResponse(200, summary, 'Expense summary fetched'));
+  const summary = aggregation[0];
+  const totalRecords = summary.metadata[0]?.total || 0;
+  const totalPages = Math.ceil(totalRecords / limit);
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      currentPage: parseInt(page),
+      totalPages,
+      totalRecords,
+      data: summary.data
+    }, 'Expense summary fetched')
+  );
 });
+
+
+// export const getExpenseSummary = asyncHandler(async (req, res) => {
+//   const userId = req.user._id;
+//   const summary = await Expense.aggregate([
+//     { $match: { userId } }, // Only current user's expenses
+
+//     {
+//       $group: {
+//         _id: {
+//           category: '$category',
+//           month: { $month: '$date' },
+//           year: { $year: '$date' }
+//         },
+//         totalAmount: { $sum: '$amount' },
+//         count: { $sum: 1 }
+//       }
+//     },
+//     {
+//       $sort: { '_id.year': -1, '_id.month': -1 } // Latest first
+//     }
+//   ]);
+
+//   res.status(200).json(new ApiResponse(200, summary, 'Expense summary fetched'));
+// });
