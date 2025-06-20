@@ -2,14 +2,17 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../config/apiRequest';
 import { endpoints } from '../config/endPoints';
+import { toast } from 'react-toastify';
 const Header = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
   const handleLogout = async () => {
   try {
-    await apiRequest(endpoints.Logout); // Call your logout API (clears cookie on server)
+    await apiRequest(endpoints.Logout); 
+    toast.success("User logout")
   } catch (err) {
+    toast.error("Logout failed")
     console.error('Logout error:', err.message);
   } finally {
     // Clear token from localStorage anyway

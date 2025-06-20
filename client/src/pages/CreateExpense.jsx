@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { apiRequest } from '../config/apiRequest';
 import { endpoints } from '../config/endPoints';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-toastify';
 const CreateExpense = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
@@ -26,8 +26,7 @@ const CreateExpense = () => {
       // ✅ Using your fetch-based apiRequest utility and defined endpoints
       const response = await apiRequest(endpoints.CreateExpense, formData);
 
-      alert(response.message || "Expense created successfully!");
-
+      toast.success("Expense created successfully!");
       // Reset form
       setFormData({
         title: '',
@@ -39,7 +38,7 @@ const CreateExpense = () => {
       });
     } catch (error) {
       console.error(error);
-      alert(error.message || "Error creating expense");
+      toast.error("Error creating expense");
     }
   };
 

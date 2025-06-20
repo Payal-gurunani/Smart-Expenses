@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../config/apiRequest';
 import { endpoints } from '../config/endPoints';
+import { toast } from 'react-toastify';
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -20,13 +21,14 @@ const Login = () => {
       
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
-        
-        navigate('/'); // ✅ navigate to some protected route
+        toast.success("Login successfully")
+        navigate('/'); 
       } else {
         setError('Login failed: No token returned');
       }
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(err.message || 'Login failed')
+      toast.error("Login Failed")
     } finally {
       setLoading(false);
     }

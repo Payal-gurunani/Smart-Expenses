@@ -1,4 +1,5 @@
 import './App.css'
+import { ToastContainer } from 'react-toastify';
 import { useEffect, useState } from 'react';
 import LightModeIcon from '@mui/icons-material/LightMode'; // Sun
 import DarkModeIcon from '@mui/icons-material/DarkMode';   // Moon
@@ -74,9 +75,10 @@ function App() {
       <Route path='create-expense' element={<CreateExpense />}/>
       <Route path = 'all-expenses' element={<AllExpenses />} />
       <Route path="/update-expense/:id" element={< UpdateExpense/>} />
-
       </Route>
     </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
+
     </div>
 
   )

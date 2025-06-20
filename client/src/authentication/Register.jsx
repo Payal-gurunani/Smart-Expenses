@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {apiRequest} from '../config/apiRequest.js';
 import {endpoints} from '../config/endPoints.js'
 import { Typography } from '@mui/material';
+import { toast } from 'react-toastify';
 // import { useNavigate } from 'react-router-dom';
 const Register = () => {
   const [form, setForm] = useState({ username: '', email: '',password: '' });
@@ -20,9 +21,11 @@ const navigate = useNavigate();
      
       
       if (response.success) {
-        alert('Registration successful! Please login.');
+        toast.success('Registration successful! Please login.')
+        // alert('Registration successful! Please login.');
         navigate('/login');
       } else {
+        toast.error("Registration failed. Please try again.")
         setError(response.message || 'Registration failed. Please try again.');
       }
     } 

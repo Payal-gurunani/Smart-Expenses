@@ -12,10 +12,10 @@ const AllExpenses = () => {
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [expenseToDelete, setExpenseToDelete] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedExpense, setSelectedExpense] = useState(null); 
+    const [selectedExpense, setSelectedExpense] = useState(null);
     const [monthlySummary, setMonthlySummary] = useState([]);
     const [selectedMonthKey, setSelectedMonthKey] = useState(null);
-const [refetch, setRefetch] = useState(false);
+    const [refetch, setRefetch] = useState(false);
 
     const navigate = useNavigate();
     const fetchData = async () => {
@@ -28,19 +28,20 @@ const [refetch, setRefetch] = useState(false);
             setExpenses(expensesRes.data);
 
             if (selectedMonthKey) {
-  const hasExpensesInMonth = expensesRes.data.some((exp) => {
-    const date = new Date(exp.date);
-    const key = `${date.getMonth() + 1}-${date.getFullYear()}`;
-    return key === selectedMonthKey;
-  });
+                const hasExpensesInMonth = expensesRes.data.some((exp) => {
+                    const date = new Date(exp.date);
+                    const key = `${date.getMonth() + 1}-${date.getFullYear()}`;
+                    return key === selectedMonthKey;
+                });
 
-  if (!hasExpensesInMonth) {
-    setSelectedMonthKey(null);
-  }
-}
+                if (!hasExpensesInMonth) {
+                    setSelectedMonthKey(null);
+                }
+            }
 
         } catch (err) {
             console.error("Error fetching data", err);
+            toast.error("Error fetching expense.");
         } finally {
             setLoading(false);
         }
@@ -122,7 +123,7 @@ const [refetch, setRefetch] = useState(false);
                                     className="mt-3 text-sm text-blue-600 underline"
                                     onClick={() => setSelectedMonthKey(summary.key)}
                                 >
-                                    
+
                                     View Details
                                 </button>
                             </motion.div>
@@ -211,18 +212,18 @@ const [refetch, setRefetch] = useState(false);
                         <p className="text-sm mb-6">Are you sure you want to delete <strong>{expenseToDelete.title}</strong>?</p>
                         <div className="flex justify-center gap-4">
                             <button
-                           onClick={async () => {
-  try {
-    await apiRequest(endpoints.DeleteExpense(expenseToDelete._id));
-    setDeleteConfirm(false);
-    setExpenseToDelete(null);
-    setRefetch(prev => !prev);
-toast.success("Expense deleted successfully!");
+                                onClick={async () => {
+                                    try {
+                                        await apiRequest(endpoints.DeleteExpense(expenseToDelete._id));
+                                        setDeleteConfirm(false);
+                                        setExpenseToDelete(null);
+                                        setRefetch(prev => !prev);
+                                        toast.success("Expense deleted successfully!");
 
-  } catch (err) {
-    console.error("Error deleting expense", err);
-  }
-}}
+                                    } catch (err) {
+                                        console.error("Error deleting expense", err);
+                                    }
+                                }}
 
                                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                             >

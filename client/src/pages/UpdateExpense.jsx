@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiRequest } from "../config/apiRequest";
 import { endpoints } from "../config/endPoints";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 const UpdateExpense = () => {
   const { id } = useParams();
@@ -47,11 +48,11 @@ const UpdateExpense = () => {
     e.preventDefault();
     try {
       await apiRequest(endpoints.UpdateExpense(id), formData);
-      alert("Expense updated successfully!");
+      toast.success("Expense updated successfully!");
       navigate("/all-expenses");
     } catch (err) {
       console.error("Failed to update expense", err);
-      alert("Error updating expense.");
+      toast.error("Error updating expense.");
     }
   };
 
