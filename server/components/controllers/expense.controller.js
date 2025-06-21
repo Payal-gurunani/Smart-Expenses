@@ -113,11 +113,10 @@ export const getExpenseSummary = asyncHandler(async (req, res) => {
 
   const matchStage = { userId };
 
-  // Optional date range filtering
   if (startDate && endDate) {
     matchStage.date = {
       $gte: new Date(startDate),
-      $lte: new Date(endDate)
+      $lte: new Date(endDate),
     };
   }
 
@@ -131,10 +130,10 @@ export const getExpenseSummary = asyncHandler(async (req, res) => {
         _id: {
           year: { $year: "$date" },
           month: { $month: "$date" },
-          category: "$category"
+          category: "$category",
         },
-        categoryTotal: { $sum: "$amount" }
-      }
+        categoryTotal: { $sum: "$amount" },
+      },
     },
     {
       $group: {
@@ -142,56 +141,83 @@ export const getExpenseSummary = asyncHandler(async (req, res) => {
         categories: {
           $push: {
             category: "$_id.category",
-            amount: "$categoryTotal"
-          }
+            amount: "$categoryTotal",
+          },
         },
-        totalAmount: { $sum: "$categoryTotal" }
-      }
+        totalAmount: { $sum: "$categoryTotal" },
+      },
+    },
+
+    // ✅ Add this $lookup to get budgetAmount
+    {
+      $lookup: {
+        from: "monthlybudgets", // ensure this is your actual MongoDB collection name
+        let: { year: "$_id.year", month: "$_id.month" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$year", "$$year"] },
+                  { $eq: ["$month", "$$month"] },
+                  { $eq: ["$userId", userId] },
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              budgetAmount: 1,
+            },
+          },
+        ],
+        as: "budget",
+      },
+    },
+
+    // ✅ Extract budgetAmount
+    {
+      $addFields: {
+        budgetAmount: {
+          $ifNull: [{ $arrayElemAt: ["$budget.budgetAmount", 0] }, null],
+        },
+      },
+    },
+
+    {
+      $project: {
+        _id: 1,
+        categories: 1,
+        totalAmount: 1,
+        budgetAmount: 1,
+      },
     },
     { $sort: { "_id.year": -1, "_id.month": -1 } },
     {
       $facet: {
         metadata: [{ $count: "total" }],
-        data: [{ $skip: skip }, { $limit: parsedLimit }]
-      }
-    }
+        data: [{ $skip: skip }, { $limit: parsedLimit }],
+      },
+    },
   ]);
 
   const summary = aggregation[0];
   const totalRecords = summary.metadata[0]?.total || 0;
-  const totalPages = Math.ceil(totalRecords / limit);
+  const totalPages = Math.ceil(totalRecords / parsedLimit);
 
   res.status(200).json(
-    new ApiResponse(200, {
-      currentPage: parseInt(page),
-      totalPages,
-      totalRecords,
-      data: summary.data
-    }, 'Expense summary fetched')
+    new ApiResponse(
+      200,
+      {
+        currentPage: parseInt(page),
+        totalPages,
+        totalRecords,
+        data: summary.data,
+      },
+      "Expense summary fetched"
+    )
   );
 });
 
 
-// export const getExpenseSummary = asyncHandler(async (req, res) => {
-//   const userId = req.user._id;
-//   const summary = await Expense.aggregate([
-//     { $match: { userId } }, // Only current user's expenses
-
-//     {
-//       $group: {
-//         _id: {
-//           category: '$category',
-//           month: { $month: '$date' },
-//           year: { $year: '$date' }
-//         },
-//         totalAmount: { $sum: '$amount' },
-//         count: { $sum: 1 }
-//       }
-//     },
-//     {
-//       $sort: { '_id.year': -1, '_id.month': -1 } // Latest first
-//     }
-//   ]);
-
-//   res.status(200).json(new ApiResponse(200, summary, 'Expense summary fetched'));
-// });

@@ -47,7 +47,7 @@ export const endpoints = {
     },
 
     SetMonthlyBudget : {
-        url : buildUrl("/budget"),
+        url : buildUrl("/budget/"),
         method:Methods.POST
     },
     GetMonthlyBudget : (year , month) =>({

@@ -25,8 +25,6 @@ export const getMonthlySummary = asyncHandler(async (req, res) => {
 
   const expenses = await Expense.find({ userId });
 
-  const summary = [];
-
   const grouped = {};
 
   // Group expenses by month-year
@@ -49,27 +47,26 @@ export const getMonthlySummary = asyncHandler(async (req, res) => {
     grouped[key].categories[exp.category] = (grouped[key].categories[exp.category] || 0) + exp.amount;
   }
 
-  // Add budget info
-  for (const key in grouped) {
-    const { month, year, totalAmount, categories } = grouped[key];
-if (totalAmount === 0) continue;
+  // Parallel fetch budgets and build summary
+  const summary = await Promise.all(
+    Object.values(grouped).map(async ({ month, year, totalAmount, categories }) => {
+      if (totalAmount === 0) return null;
 
-    const budget = await MonthlyBudget.findOne({ userId, month, year });
+      const budget = await MonthlyBudget.findOne({ userId, month, year });
 
-    summary.push({
-      _id: { month, year },
-      totalAmount,
-      categories: Object.entries(categories).map(([category, amount]) => ({ category, amount })),
-      budgetAmount: budget?.budgetAmount || null, // ✅ Add this line
-    });
-  }
-summary.sort((a, b) => {
-  const aDate = new Date(a._id.year, a._id.month - 1);
-  const bDate = new Date(b._id.year, b._id.month - 1);
-  return bDate - aDate; // descending
-});
-
-  res.status(200).json(
-    new ApiResponse(200,summary,"get data")
+      return {
+        _id: { month, year },
+        totalAmount,
+        categories: Object.entries(categories).map(([category, amount]) => ({ category, amount })),
+        budgetAmount: budget?.budgetAmount ?? null,
+      };
+    })
   );
+
+  // Filter out null entries and sort
+  const filteredSummary = summary
+    .filter(Boolean)
+    .sort((a, b) => new Date(b._id.year, b._id.month - 1) - new Date(a._id.year, a._id.month - 1));
+
+  res.status(200).json(new ApiResponse(200, filteredSummary, "get data"));
 });
