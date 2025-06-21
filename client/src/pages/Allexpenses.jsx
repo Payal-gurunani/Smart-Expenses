@@ -158,7 +158,7 @@ const budgetButtonLabel = budgetLoading
 
                 {visibleCharts[summary.key] && (
                   <div className="mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={250}>
                       <PieChart>
                         <Pie
                           data={
