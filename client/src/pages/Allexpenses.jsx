@@ -27,7 +27,7 @@ const AllExpenses = () => {
   const [visibleCharts, setVisibleCharts] = useState({});
   const [refetch, setRefetch] = useState(false);
   const [loading, setLoading] = useState(true);
-const [budgetManuallyUpdated, setBudgetManuallyUpdated] = useState(false);
+  const [budgetManuallyUpdated, setBudgetManuallyUpdated] = useState(false);
 
   const COLORS = ["#114AB1", "#6793AC", "#E4580B", "#82ca9d", "#FFBB28", "#FF8042"];
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ const [budgetManuallyUpdated, setBudgetManuallyUpdated] = useState(false);
         const budgetRes = await apiRequest(endpoints.GetMonthlyBudget(year, month));
         setMonthlyBudget(budgetRes.data?.budgetAmount || null);
       }
-      
+
 
     } catch (err) {
       console.error("Error fetching data", err);
@@ -59,34 +59,34 @@ const [budgetManuallyUpdated, setBudgetManuallyUpdated] = useState(false);
     fetchData();
   }, [refetch, selectedMonthKey]);
 
-useEffect(() => {
-  if (monthlyBudget !== null && !budgetManuallyUpdated) {
-    setBudgetInput(monthlyBudget.toString());
-  }
-}, [monthlyBudget]);
+  useEffect(() => {
+    if (monthlyBudget !== null && !budgetManuallyUpdated) {
+      setBudgetInput(monthlyBudget.toString());
+    }
+  }, [monthlyBudget]);
 
 
- const mergedSummaries = monthlySummary.map((summary) => {
-  const key = `${summary._id.month}-${summary._id.year}`;
-  return {
-    ...summary,
-    key,
-    budgetAmount: summary.budgetAmount ?? null, // 🛠 explicitly carry it forward
-  };
-});
+  const mergedSummaries = monthlySummary.map((summary) => {
+    const key = `${summary._id.month}-${summary._id.year}`;
+    return {
+      ...summary,
+      key,
+      budgetAmount: summary.budgetAmount ?? null, // 🛠 explicitly carry it forward
+    };
+  });
 
 
   const selectedSummary = mergedSummaries.find((s) => s.key === selectedMonthKey);
   const isBudgetValid = budgetInput !== "" && !isNaN(budgetInput) && Number(budgetInput) > 0;
-const isBudgetSame = parseInt(budgetInput) === parseInt(monthlyBudget);
+  const isBudgetSame = parseInt(budgetInput) === parseInt(monthlyBudget);
 
-const budgetButtonLabel = budgetLoading
-  ? "Saving..."
-  : monthlyBudget === null
-    ? "Save Budget"
-    : isBudgetValid && !isBudgetSame
-    ? "Update"
-    : "Budget Set";
+  const budgetButtonLabel = budgetLoading
+    ? "Saving..."
+    : monthlyBudget === null
+      ? "Save Budget"
+      : isBudgetValid && !isBudgetSame
+        ? "Update"
+        : "Budget Set";
 
 
 
@@ -158,19 +158,23 @@ const budgetButtonLabel = budgetLoading
 
                 {visibleCharts[summary.key] && (
                   <div className="mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={250}>
                       <PieChart>
                         <Pie
                           data={
                             summary.budgetAmount !== undefined
                               ? [
-                                  { name: "Spent", value: summary.totalAmount },
-                                  {
-                                    name: "Leftover",
-                                    value: Math.max(summary.budgetAmount - summary.totalAmount, 0),
-                                  },
-                                ]
-                              : summary.categories
+                                { name: "Spent", value: summary.totalAmount },
+                                {
+                                  name: "Leftover",
+                                  value: Math.max(summary.budgetAmount - summary.totalAmount, 0),
+                                },
+                              ]
+                              : summary.categories?.map(cat => ({
+                                name: cat.category,
+                                value: cat.amount,
+                              }))
+
                           }
                           dataKey="value"
                           nameKey="name"
@@ -181,12 +185,12 @@ const budgetButtonLabel = budgetLoading
                         >
                           {(summary.budgetAmount
                             ? [
-                                { name: "Spent", value: summary.totalAmount },
-                                {
-                                  name: "Leftover",
-                                  value: Math.max(summary.budgetAmount - summary.totalAmount, 0),
-                                },
-                              ]
+                              { name: "Spent", value: summary.totalAmount },
+                              {
+                                name: "Leftover",
+                                value: Math.max(summary.budgetAmount - summary.totalAmount, 0),
+                              },
+                            ]
                             : summary.categories
                           ).map((entry, i) => (
                             <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -214,136 +218,136 @@ const budgetButtonLabel = budgetLoading
         </div>
       )}
 
- {selectedMonthKey && (
-  <>
-    {/* Budget input - always visible */}
-    <div className="mt-4 text-center">
-      <input
-        type="number"
-        placeholder="Enter your monthly budget"
-        value={budgetInput}
-         onChange={(e) => {
-    setBudgetInput(e.target.value);
-    setBudgetManuallyUpdated(true);
-  }}
-        className="border p-2 rounded-md mr-2 w-48"
-      />
-    <button
-  onClick={async () => {
-  if (!budgetInput || isNaN(budgetInput) || Number(budgetInput) <= 0) {
-    toast.error("Enter a valid budget amount");
-    return;
-  }
+      {selectedMonthKey && (
+        <>
+          {/* Budget input - always visible */}
+          <div className="mt-4 text-center">
+            <input
+              type="number"
+              placeholder="Enter your monthly budget"
+              value={budgetInput}
+              onChange={(e) => {
+                setBudgetInput(e.target.value);
+                setBudgetManuallyUpdated(true);
+              }}
+              className="border p-2 rounded-md mr-2 w-48"
+            />
+            <button
+              onClick={async () => {
+                if (!budgetInput || isNaN(budgetInput) || Number(budgetInput) <= 0) {
+                  toast.error("Enter a valid budget amount");
+                  return;
+                }
 
-  try {
-    setBudgetLoading(true);
-    const [month, year] = selectedMonthKey.split("-");
-    await apiRequest(endpoints.SetMonthlyBudget, {
-      month: parseInt(month),
-      year: parseInt(year),
-      budgetAmount: parseInt(budgetInput),
-    });
+                try {
+                  setBudgetLoading(true);
+                  const [month, year] = selectedMonthKey.split("-");
+                  await apiRequest(endpoints.SetMonthlyBudget, {
+                    month: parseInt(month),
+                    year: parseInt(year),
+                    budgetAmount: parseInt(budgetInput),
+                  });
 
-    toast.success("Budget saved!");
+                  toast.success("Budget saved!");
 
-    const [updatedSummaryRes, updatedExpensesRes] = await Promise.all([
-      apiRequest(endpoints.Summary),
-      apiRequest(endpoints.GetExpense),
-    ]);
-    setMonthlySummary(updatedSummaryRes.data.data || []);
-    setExpenses(updatedExpensesRes.data || []);
-    setMonthlyBudget(parseInt(budgetInput));
+                  const [updatedSummaryRes, updatedExpensesRes] = await Promise.all([
+                    apiRequest(endpoints.Summary),
+                    apiRequest(endpoints.GetExpense),
+                  ]);
+                  setMonthlySummary(updatedSummaryRes.data.data || []);
+                  setExpenses(updatedExpensesRes.data || []);
+                  setMonthlyBudget(parseInt(budgetInput));
 
-    // Reset input and flag
-    
-    setBudgetManuallyUpdated(false);
+                  // Reset input and flag
 
-    setRefetch((prev) => !prev);
-    setTimeout(() => {
-      setVisibleCharts((prev) => ({ ...prev, [selectedMonthKey]: true }));
-    }, 100);
-  } catch (err) {
-    toast.error("Error saving budget");
-  } finally {
-    setBudgetLoading(false);
-  }
-}}
+                  setBudgetManuallyUpdated(false);
 
-  className="bg-[#E4580B] text-white px-4 py-2 m-3 rounded-lg hover:bg-[#c54408] transition cursor-pointer"
->
-  {budgetButtonLabel}
-</button>
+                  setRefetch((prev) => !prev);
+                  setTimeout(() => {
+                    setVisibleCharts((prev) => ({ ...prev, [selectedMonthKey]: true }));
+                  }, 100);
+                } catch (err) {
+                  toast.error("Error saving budget");
+                } finally {
+                  setBudgetLoading(false);
+                }
+              }}
 
-    </div>
+              className="bg-[#E4580B] text-white px-4 py-2 m-3 rounded-lg hover:bg-[#c54408] transition cursor-pointer"
+            >
+              {budgetButtonLabel}
+            </button>
 
-    <button
-      onClick={() => setSelectedMonthKey(null)}
-      className="text-sm text-blue-600 underline mt-4 cursor-pointer"
-    >
-      ← Back to monthly summary
-    </button>
+          </div>
 
-    <h2 className="text-2xl font-bold text-center mt-6 text-[#114AB1]">
-      {new Date(Number(selectedMonthKey.split("-")[1]), Number(selectedMonthKey.split("-")[0]) - 1).toLocaleString("default", { month: "long", year: "numeric" })} Expenses
-    </h2>
-
-    {selectedSummary?.categories?.map((cat) => (
-      <div key={cat.category} className="text-sm text-center text-gray-700">
-        <strong>{cat.category}</strong>: ₹{cat.amount}
-      </div>
-    ))}
-
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4">
-      {expenses
-        .filter((exp) => {
-          const date = new Date(exp.date);
-          const key = `${date.getMonth() + 1}-${date.getFullYear()}`;
-          return key === selectedMonthKey;
-        })
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .map((expense) => (
-          <motion.div
-            key={expense._id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+          <button
+            onClick={() => setSelectedMonthKey(null)}
+            className="text-sm text-blue-600 underline mt-4 cursor-pointer"
           >
-            <h2 className="text-lg font-semibold text-[#114AB1]">{expense.title}</h2>
-            <p className="text-sm text-gray-600">₹ {expense.amount}</p>
-            <p className="text-sm text-gray-600">Category: {expense.category}</p>
-            <p className="text-sm text-gray-600">Date: {new Date(expense.date).toLocaleDateString()}</p>
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={async () => {
-                  const res = await apiRequest(endpoints.GetExpenseById(expense._id));
-                  setSelectedExpense(res.data);
-                }}
-                className="text-sm text-[#114AB1] hover:underline"
-              >
-                View
-              </button>
-              <button
-                onClick={() => {
-                  setExpenseToDelete(expense);
-                  setDeleteConfirm(true);
-                }}
-                className="text-sm text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => navigate(`/update-expense/${expense._id}`)}
-                className="text-sm text-green-600 hover:underline"
-              >
-                Edit
-              </button>
+            ← Back to monthly summary
+          </button>
+
+          <h2 className="text-2xl font-bold text-center mt-6 text-[#114AB1]">
+            {new Date(Number(selectedMonthKey.split("-")[1]), Number(selectedMonthKey.split("-")[0]) - 1).toLocaleString("default", { month: "long", year: "numeric" })} Expenses
+          </h2>
+
+          {selectedSummary?.categories?.map((cat) => (
+            <div key={cat.category} className="text-sm text-center text-gray-700">
+              <strong>{cat.category}</strong>: ₹{cat.amount}
             </div>
-          </motion.div>
-        ))}
-    </div>
-  </>
-)}
+          ))}
+
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4">
+            {expenses
+              .filter((exp) => {
+                const date = new Date(exp.date);
+                const key = `${date.getMonth() + 1}-${date.getFullYear()}`;
+                return key === selectedMonthKey;
+              })
+              .sort((a, b) => new Date(a.date) - new Date(b.date))
+              .map((expense) => (
+                <motion.div
+                  key={expense._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+                >
+                  <h2 className="text-lg font-semibold text-[#114AB1]">{expense.title}</h2>
+                  <p className="text-sm text-gray-600">₹ {expense.amount}</p>
+                  <p className="text-sm text-gray-600">Category: {expense.category}</p>
+                  <p className="text-sm text-gray-600">Date: {new Date(expense.date).toLocaleDateString()}</p>
+                  <div className="flex gap-4 mt-4">
+                    <button
+                      onClick={async () => {
+                        const res = await apiRequest(endpoints.GetExpenseById(expense._id));
+                        setSelectedExpense(res.data);
+                      }}
+                      className="text-sm text-[#114AB1] hover:underline"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => {
+                        setExpenseToDelete(expense);
+                        setDeleteConfirm(true);
+                      }}
+                      className="text-sm text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => navigate(`/update-expense/${expense._id}`)}
+                      className="text-sm text-green-600 hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+          </div>
+        </>
+      )}
 
       {deleteConfirm && expenseToDelete && (
         <motion.div
