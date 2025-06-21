@@ -2,6 +2,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser';
 import userRoutes from './components/routes/user.routes.js'
 import expenseRoutes from './components/routes/expense.routes.js'
+import budgetRoutes from './components/routes/budget.routes.js'
 import cors from 'cors'
 const app = express();
 app.use(express.json())
@@ -13,7 +14,7 @@ app.use(cors({
 
 app.use('/api/v1/users',userRoutes)
 app.use('/api/v1/expenses',expenseRoutes)
-
+app.use('/api/v1/budget',budgetRoutes)
 // Global Error Handler
 app.use((err, req, res, next) => {
 
