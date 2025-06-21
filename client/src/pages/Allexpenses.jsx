@@ -16,7 +16,11 @@ const AllExpenses = () => {
     const [monthlySummary, setMonthlySummary] = useState([]);
     const [selectedMonthKey, setSelectedMonthKey] = useState(null);
     const [refetch, setRefetch] = useState(false);
-const [showChart, setShowChart] = useState(false); 
+    const [visibleCharts, setVisibleCharts] = useState({});
+
+    const [monthlyBudget, setMonthlyBudget] = useState(null);
+    const [budgetInput, setBudgetInput] = useState("");
+    const [budgetLoading, setBudgetLoading] = useState(false);
 
     const COLORS = ["#114AB1", "#6793AC", "#E4580B", "#82ca9d", "#FFBB28", "#FF8042"];
 
@@ -27,31 +31,33 @@ const [showChart, setShowChart] = useState(false);
                 apiRequest(endpoints.Summary),
                 apiRequest(endpoints.GetExpense),
             ]);
-            setMonthlySummary(summaryRes.data?.data || []);
-            setExpenses(expensesRes.data);
-
+            setMonthlySummary(Array.isArray(summaryRes.data.data) ? summaryRes.data.data : []);
+            setExpenses(Array.isArray(expensesRes.data) ? expensesRes.data : []);
+            // 👇 Fetch budget only if selectedMonthKey is selected
             if (selectedMonthKey) {
-                const hasExpensesInMonth = expensesRes.data.some((exp) => {
+                const [month, year] = selectedMonthKey.split("-");
+                const budgetRes = await apiRequest(endpoints.GetMonthlyBudget(year, month));
+                setMonthlyBudget(budgetRes.data?.budgetAmount || null);
+            }
+
+            // 👇 Reset month if no expenses exist
+            if (selectedMonthKey) {
+                const hasExpenses = expensesRes.data.some((exp) => {
                     const date = new Date(exp.date);
                     const key = `${date.getMonth() + 1}-${date.getFullYear()}`;
                     return key === selectedMonthKey;
                 });
-
-                if (!hasExpensesInMonth) {
-                    setSelectedMonthKey(null);
-                }
             }
-
         } catch (err) {
             console.error("Error fetching data", err);
-
         } finally {
             setLoading(false);
         }
     };
+
     useEffect(() => {
         fetchData();
-    }, [refetch]);
+    }, [refetch, selectedMonthKey]);
 
     if (loading) return <div className="text-center mt-10 text-[#114AB1]">Loading expenses...</div>;
     if (!loading && expenses.length === 0) {
@@ -96,61 +102,91 @@ const [showChart, setShowChart] = useState(false);
             {!selectedMonthKey && (
 
                 <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                  {mergedSummaries.map((summary, index) => {
-  const monthName = new Date(summary._id.year, summary._id.month - 1).toLocaleString("default", { month: "long" });
-  // Add this line inside map if chart state is per-summary
+                    {mergedSummaries.map((summary) => {
+                        const monthName = new Date(summary._id.year, summary._id.month - 1).toLocaleString("default", { month: "long" });
+                        // Add this line inside map if chart state is per-summary
+                       
+                       return (
+  <motion.div
+    key={summary.key}
+    className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+  >
+    <h2 className="text-lg font-bold text-[#114AB1]">
+      {monthName} {summary._id.year}
+    </h2>
+    <p className="text-gray-600 text-sm">Total Spent: ₹{summary.totalAmount}</p>
 
-  return (
-    <motion.div
-      key={summary.key}
-      className="bg-white shadow-md rounded-xl p-4 border-t-4 border-[#6793AC]"
+    {/* ✅ Budget Info block (inside the return) */}
+    {summary.budgetAmount !== undefined && (
+      <div className="mt-2 text-sm font-medium text-[#114AB1]">
+        Budget: ₹{summary.budgetAmount} |{" "}
+        Leftover: ₹{Math.max(summary.budgetAmount - summary.totalAmount, 0)}
+      </div>
+    )}
+
+  <button
+  onClick={() => setVisibleCharts(prev => ({
+    ...prev,
+    [summary.key]: !prev[summary.key]
+  }))}
+  className="mt-2 text-sm text-[#E4580B] underline"
+>
+  {visibleCharts[summary.key] ? "Hide Category Breakdown" : "Show Category Breakdown"}
+</button>
+
+{visibleCharts[summary.key] && (
+  <div className="mt-4">
+    <ResponsiveContainer width="100%" height={200}>
+      <PieChart>
+        <Pie
+          data={
+            summary.budgetAmount
+              ? [
+                  { name: "Spent", value: summary.totalAmount },
+                  {
+                    name: "Leftover",
+                    value: Math.max(summary.budgetAmount - summary.totalAmount, 0),
+                  },
+                ]
+              : summary.categories
+          }
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={60}
+          label
+        >
+          {(summary.budgetAmount
+            ? [
+                { name: "Spent", value: summary.totalAmount },
+                {
+                  name: "Leftover",
+                  value: Math.max(summary.budgetAmount - summary.totalAmount, 0),
+                },
+              ]
+            : summary.categories
+          ).map((entry, i) => (
+            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend verticalAlign="bottom" height={36} />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+)}
+
+    <button
+      className="mt-3 ml-3 text-sm text-blue-600 underline"
+      onClick={() => setSelectedMonthKey(summary.key)}
     >
-      <h2 className="text-lg font-bold text-[#114AB1]">
-        {monthName} {summary._id.year}
-      </h2>
-      <p className="text-gray-600 text-sm">Total Spent: ₹{summary.totalAmount}</p>
+      View Details
+    </button>
+  </motion.div>
+);
 
-      {/* Expandable Category Chart Button */}
-      <button
-        onClick={() => setShowChart(!showChart)}
-        className="mt-2 text-sm text-[#E4580B] underline"
-      >
-        {showChart ? "Hide Category Breakdown" : "Show Category Breakdown"}
-      </button>
-
-      {showChart && (
-        <div className="mt-4">
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={summary.categories}
-                dataKey="amount"
-                nameKey="category"
-                cx="50%"
-                cy="50%"
-                outerRadius={60}
-                label
-              >
-                {summary.categories.map((entry, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" height={36} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      <button
-        className="mt-3 ml-3 text-sm text-blue-600 underline"
-        onClick={() => setSelectedMonthKey(summary.key)}
-      >
-        View Details
-      </button>
-    </motion.div>
-  );
-})}
+                    })}
 
 
                 </div>
@@ -158,6 +194,46 @@ const [showChart, setShowChart] = useState(false);
 
             {selectedMonthKey && (
                 <>
+
+                    {/* Show budget input if not already set */}
+                    {monthlyBudget === null && (
+                        <div className="mt-4 text-center">
+                            <input
+                                type="number"
+                                placeholder="Enter your monthly budget"
+                                value={budgetInput}
+                                onChange={(e) => setBudgetInput(e.target.value)}
+                                className="border p-2 rounded-md mr-2 w-48"
+                            />
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setBudgetLoading(true);
+                                        const [month, year] = selectedMonthKey.split("-");
+                                        await apiRequest(endpoints.SetMonthlyBudget, {
+                                            month: parseInt(month),
+                                            year: parseInt(year),
+                                            budgetAmount: parseInt(budgetInput),
+                                        });
+                                        setMonthlyBudget(parseInt(budgetInput));
+                                        setRefetch(prev => !prev); 
+                                        toast.success("Budget saved!");
+                                    } catch (err) {
+                                        toast.error("Error saving budget");
+                                    } finally {
+                                        setBudgetLoading(false);
+                                    }
+                                }}
+                                disabled={budgetLoading}
+                                className="bg-[#E4580B] text-white px-4 py-2 rounded hover:bg-[#c54408]"
+                            >
+                                Save Budget
+                            </button>
+                        </div>
+                    )}
+
+
+
                     <button
                         onClick={() => setSelectedMonthKey(null)}
                         className="text-sm text-blue-600 underline mt-4"

@@ -44,5 +44,14 @@ export const endpoints = {
     Summary: {
         url: buildUrl("/expenses/summary"),
         method: Methods.GET
-    }
+    },
+
+    SetMonthlyBudget : {
+        url : buildUrl("/budget"),
+        method:Methods.POST
+    },
+    GetMonthlyBudget : (year , month) =>({
+        url:buildUrl(`/budget/${year}/${month}`),
+        method:Methods.GET
+    })
 }
