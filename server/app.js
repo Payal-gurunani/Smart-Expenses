@@ -9,7 +9,7 @@ app.use(express.json())
 app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5005",                 // Vite dev server
-  "https://smart-expenses-two.vercel.app/"       // Vercel deployed app
+  "https://smart-expenses-two.vercel.app"       // Vercel deployed app
 ];
 app.use(cors({
   origin: allowedOrigins, // Allow your frontend origin
