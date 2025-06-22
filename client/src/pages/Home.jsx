@@ -34,11 +34,21 @@ const Home = () => {
           Track, manage, and analyze your expenses with ease. Stay in control of your money.
         </p>
         <button
-          onClick={() => navigate("/all-expenses")}
-          className="bg-[#E4580B] text-white px-6 py-3 rounded-full hover:bg-[#c54408] transition font-semibold shadow-lg"
-        >
-          Get Started →
-        </button>
+  onClick={() => {
+    
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/all-expenses");
+    } else {
+      navigate("/login");
+    }
+  }
+  }
+  className="bg-[#E4580B] text-white px-6 py-3 rounded-full hover:bg-[#c54408] transition font-semibold shadow-lg"
+>
+  Get Started →
+</button>
+
       </motion.div>
     </div>
   );
