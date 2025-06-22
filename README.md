@@ -9,8 +9,6 @@ A full-featured personal finance tracker built with **React**, **Tailwind CSS**,
 
 ---
 
-
-
 ## 🚀 Features
 
 - ✅ Add, edit, delete individual expenses  
@@ -37,20 +35,64 @@ A full-featured personal finance tracker built with **React**, **Tailwind CSS**,
 
 ---
 
-## 🧩 Install & Run
+---
+
+## 🔐 Environment Variables Setup
+
+Set up the following `.env` files before running the app:
+
+### 🗄️ Server (`server/.env`)
+
+```env
+MONGODB_URL=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+PORT=5000
+```
+⚠️ Do not commit this file — it contains sensitive information.
+
+### Client (`client/.env`)
+```env
+VITE_API_BACKEND_URL=http://localhost:5000
+```
+---
+
+## 🧩 Install & Run(Fullstack)
 
 ```bash
 git clone https://github.com/yourusername/smart-expense-tracker.git
 cd smart-expense-tracker
-```
-## Install dependencies
-```bash
+# Install root, client, and server dependencies
 npm install
-```
-## Start
-```bash
+cd client && npm install
+cd ../server && npm install
+cd ..
+
+# Start both frontend (Vite) and backend (Express) concurrently
 npm start
 ```
+✅ Frontend runs on: http://localhost:5005
+✅ Backend runs on: http://localhost:5000
+
+
+##  Run Individually
+▶️ Start Frontend (Vite)
+```bash
+cd client
+npm run dev
+```
+
+▶️ Start Backend (Express)
+```bash
+cd server
+npm start
+
+```
+---
+
+Thank you for checking out Smart Expense Tracker — built with precision, performance, and passion.
+
+
+
 
 
 
