@@ -5,11 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../config/apiRequest';
 import { endpoints } from '../config/endPoints';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext.jsx';
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate()
+  const { setIsAuthenticated } = useAuth();
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
@@ -21,6 +23,7 @@ const Login = () => {
       
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
+        setIsAuthenticated(true);
         toast.success("Login successfully")
         navigate('/'); 
       } else {

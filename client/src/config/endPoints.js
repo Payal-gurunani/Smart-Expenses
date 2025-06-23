@@ -21,6 +21,10 @@ export const endpoints = {
         url: buildUrl("/users/logout"),
         method: Methods.GET
     },
+    CheckAuth: {
+  url: buildUrl("/users/check-auth"),
+  method: Methods.GET
+},
     CreateExpense: {
         url: buildUrl("/expenses/create-expense"),
         method: Methods.POST

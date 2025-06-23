@@ -1,9 +1,16 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 const Home = () => {
   const navigate = useNavigate();
+  const {isAuthnticated} = useAuth();
+   useEffect(() => {
+    if(isAuthnticated) {
+      navigate("/allexpenses");
+    }
+}, [navigate]);
 
   return (
     <div className="min-h-screen bg-[#F5F9FF] flex flex-col justify-center items-center relative overflow-hidden p-4">
@@ -34,21 +41,14 @@ const Home = () => {
           Track, manage, and analyze your expenses with ease. Stay in control of your money.
         </p>
         <button
-  onClick={() => {
-    
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/all-expenses");
-    } else {
-      navigate("/login");
-    }
-  }
-  }
+  onClick={() => navigate("/login")}
+  
   className="bg-[#E4580B] text-white px-6 py-3 rounded-full hover:bg-[#c54408] transition font-semibold shadow-lg"
 >
   Get Started →
+  
 </button>
-
+{/* //add condition if user login not let him on the home/getstart redirect him/her to allexpenecse page */}
       </motion.div>
     </div>
   );
