@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 const Home = () => {
   const navigate = useNavigate();
-  const {isAuthnticated} = useAuth();
+ const { isAuthenticated } = useAuth();
+
    useEffect(() => {
-    if(isAuthnticated) {
-      navigate("/allexpenses");
+    if(isAuthenticated) {
+      navigate("/all-expenses");
     }
 }, [navigate]);
 
