@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {apiRequest} from '../config/apiRequest.js';
 import {endpoints} from '../config/endPoints.js'
 import { Typography } from '@mui/material';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext.jsx';
 // import { useNavigate } from 'react-router-dom';
 const Register = () => {
   const [form, setForm] = useState({ username: '', email: '',password: '' });
 const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const { isAuthenticated } = useAuth();
 const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +44,15 @@ const navigate = useNavigate();
     setLoading(false);
   }
 };
+useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/all-expenses"); // Redirect if already logged in
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated) {
+    return null; // Prevent flicker
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row font-[Poppins] text-white">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ const Login = () => {
   const navigate = useNavigate()
   const { setIsAuthenticated } = useAuth();
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
+const { isAuthenticated } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -36,6 +36,15 @@ const Login = () => {
       setLoading(false);
     }
   };
+useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/all-expenses"); // Redirect if already logged in
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated) {
+    return null; // Prevent flicker
+  }
 
 
 

@@ -11,8 +11,10 @@ const Home = () => {
     if(isAuthenticated) {
       navigate("/all-expenses");
     }
-}, [navigate]);
-
+}, [navigate,isAuthenticated]);
+if (isAuthenticated) {
+  return null;
+}
   return (
     <div className="min-h-screen bg-[#F5F9FF] flex flex-col justify-center items-center relative overflow-hidden p-4">
       {/* Background animated circles */}
