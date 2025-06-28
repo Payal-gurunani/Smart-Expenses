@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../config/apiRequest';
 import { endpoints } from '../config/endPoints';
