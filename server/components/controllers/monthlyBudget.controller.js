@@ -32,11 +32,6 @@ export const getMonthlyBudget = asyncHandler(async (req, res) => {
   const yearNum = parseInt(year);
   const monthNum = parseInt(month);
 
-  console.log("Looking for budget with:", {
-    userId,
-    year: yearNum,
-    month: monthNum,
-  });
 
   const budget = await MonthlyBudget.findOne({
     userId,

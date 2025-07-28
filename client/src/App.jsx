@@ -5,7 +5,7 @@ import Layout from './Layout'
 import Register from './authentication/Register';
 import Login from './authentication/Login';
 import CreateExpense from './pages/CreateExpense';
-import AllExpenses from './pages/Allexpenses';
+import AllExpenses from './pages/expenses/Allexpenses';
 import UpdateExpense from './pages/UpdateExpense';
 import Home from './pages/Home';
 import ProtectedRoute from './components/ProtectedRoutes';
