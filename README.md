@@ -48,13 +48,6 @@ MONGODB_URL=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 PORT=5000
 ```
-⚠️ Do not commit this file — it contains sensitive information.
-
-### Client (`client/.env`)
-```env
-VITE_API_BACKEND_URL=http://localhost:5000
-```
----
 
 ## 🧩 Install & Run(Fullstack)
 
@@ -70,8 +63,7 @@ cd ..
 # Start both frontend (Vite) and backend (Express) concurrently
 npm start
 ```
-✅ Frontend runs on: http://localhost:5005
-✅ Backend runs on: http://localhost:5000
+
 
 
 ##  Run Individually
@@ -90,10 +82,4 @@ npm start
 ---
 
 Thank you for checking out Smart Expense Tracker — built with precision, performance, and passion.
-
-
-
-
-
-
 
