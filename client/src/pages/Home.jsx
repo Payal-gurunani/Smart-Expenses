@@ -51,7 +51,6 @@ if (isAuthenticated) {
   Get Started →
   
 </button>
-{/* //add condition if user login not let him on the home/getstart redirect him/her to allexpenecse page */}
       </motion.div>
     </div>
   );
